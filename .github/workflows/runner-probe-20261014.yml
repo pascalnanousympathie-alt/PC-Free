@@ -1,0 +1,37 @@
+name: Temporary Runner Allocation Probe
+
+on:
+  push:
+    branches:
+      - diag/runner-probe-20261014
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  ubuntu-slim:
+    name: Public-repo ubuntu-slim runner probe
+    runs-on: ubuntu-slim
+    timeout-minutes: 2
+    steps:
+      - name: Verify the GitHub-hosted runner started
+        run: |
+          set -eu
+          echo PUBLIC_REPO_HOSTED_SLIM_START_OK
+          uname -sm
+          date -u
+
+  ubuntu-standard:
+    name: Public-repo ubuntu-24.04 runner probe
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Verify the GitHub-hosted runner started
+        run: |
+          set -eu
+          echo PUBLIC_REPO_HOSTED_STANDARD_START_OK
+          uname -sm
+          date -u
