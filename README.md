@@ -128,10 +128,10 @@ Asegúrate de que `Docker Root Dir` sea `/tmp/docker-data`.
 
 ## 🧱 Archivo `windows10.yml`
 
+The runnable Compose file is now included at the repository root. It persists the Windows container using `./windows:/storage`, which is the storage path expected by the upstream `dockurr/windows` image. Virtualization devices such as `/dev/kvm` must actually be available on the host/Codespace; this configuration has not been runtime-tested on every Codespaces host.
+
 ```yaml
-# Antes de ejecutar docker-compose up, ejecuta:
-# bash check_github_follow.sh || exit 1
-# Si no sigues a https://github.com/jephersonRD, el entorno no se iniciará.
+# No helper script or GitHub follow check is required.
 services:
   windows:
     image: dockurr/windows
@@ -148,16 +148,13 @@ services:
       - "8006:8006"
       - "3389:3389/tcp"
     volumes:
-      - /tmp/docker-data:/mnt/disco1
-      - windows-data:/mnt/windows-data
+      - ./windows:/storage
     devices:
       - "/dev/kvm:/dev/kvm"
       - "/dev/net/tun:/dev/net/tun"
     stop_grace_period: 2m
     restart: always
 
-volumes:
-  windows-data:
 ```
 
 ---
@@ -167,7 +164,6 @@ volumes:
 ```ini
 WINDOWS_USERNAME=YourUsername
 WINDOWS_PASSWORD=YourPassword
-GITHUB_USER=YourGitHubUsername
 ```
 
 ### 🛑 Agrega este archivo a tu `.gitignore`:
@@ -183,7 +179,7 @@ echo ".env" >> .gitignore
 ### Iniciar por primera vez
 
 ```bash
-docker-compose -f windows10.yml up
+docker compose -f windows10.yml up
 ```
 
 ### 🔌 Apagar la PC
@@ -220,7 +216,7 @@ docker stop windows
 Start the Windows container:
 
 ```bash
-docker-compose -f windows10.yml up -d
+docker compose -f windows10.yml up -d
 ```
 
 ### Stop Windows Environment
@@ -254,7 +250,7 @@ Press Ctrl+C to exit log view.
 Remove container and all data volumes:
 
 ```bash
-docker-compose -f windows10.yml down -v
+docker compose -f windows10.yml down -v
 ```
 
 **⚠️ Warning**: This deletes all Windows data permanently.
