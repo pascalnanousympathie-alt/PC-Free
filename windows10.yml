@@ -11,8 +11,8 @@ services:
     cap_add:
       - NET_ADMIN
     devices:
-      - /dev/kvm
-      - /dev/net/tun
+      - /dev/kvm:/dev/kvm
+      - /dev/net/tun:/dev/net/tun
     ports:
       - "8006:8006"
       - "3389:3389/tcp"
