@@ -4,8 +4,8 @@ services:
     container_name: windows
     environment:
       VERSION: "10"
-      USERNAME: ${WINDOWS_USERNAME:-nanou}
-      PASSWORD: ${WINDOWS_PASSWORD:-ChangeThisPassword123!}
+      USERNAME: ${WINDOWS_USERNAME:?Set WINDOWS_USERNAME in .env}
+      PASSWORD: ${WINDOWS_PASSWORD:?Set a strong WINDOWS_PASSWORD in .env}
       RAM_SIZE: "10G"
       CPU_CORES: "4"
     cap_add:
