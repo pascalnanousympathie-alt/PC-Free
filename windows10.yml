@@ -6,8 +6,8 @@ services:
       VERSION: "10"
       USERNAME: ${WINDOWS_USERNAME:?Set WINDOWS_USERNAME in .env}
       PASSWORD: ${WINDOWS_PASSWORD:?Set a strong WINDOWS_PASSWORD in .env}
-      RAM_SIZE: "10G"
-      CPU_CORES: "4"
+      RAM_SIZE: "4G"
+      CPU_CORES: "2"
     cap_add:
       - NET_ADMIN
     devices:
