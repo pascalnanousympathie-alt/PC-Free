@@ -242,8 +242,8 @@ Edit `windows10.yml` to adjust resources:
 ```yaml
 environment:
   VERSION: "10"              # Windows version (10 or 11)
-  RAM_SIZE: "10G"           # RAM allocation
-  CPU_CORES: "4"            # CPU core count
+  RAM_SIZE: "8G"            # Increase only when host memory allows
+  CPU_CORES: "4"             # Increase only when host CPU allows
   DISK_SIZE: "64G"          # Virtual disk size
   USERNAME: ${WINDOWS_USERNAME}
   PASSWORD: ${WINDOWS_PASSWORD}
@@ -276,8 +276,8 @@ For slower systems, reduce resource allocation:
 
 ```yaml
 environment:
-  RAM_SIZE: "6G"     # Minimum for Windows 10
-  CPU_CORES: "2"     # Minimum cores
+  RAM_SIZE: "4G"     # Upstream baseline; host must have additional memory for Docker/OS
+  CPU_CORES: "2"     # Upstream baseline
 ```
 
 ---
