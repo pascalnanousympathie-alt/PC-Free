@@ -1,0 +1,47 @@
+name: PC-Free Compose validation
+
+on:
+  pull_request:
+    paths:
+      - "windows10.yml"
+      - "README.md"
+      - ".gitignore"
+      - ".github/workflows/pc-free-compose-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "windows10.yml"
+      - "README.md"
+      - ".gitignore"
+      - ".github/workflows/pc-free-compose-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-compose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Check setup files and required guardrails
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s windows10.yml
+          test -f .gitignore
+          grep -Fq '${WINDOWS_USERNAME:?' windows10.yml
+          grep -Fq '${WINDOWS_PASSWORD:?' windows10.yml
+          grep -Fq '/dev/kvm:/dev/kvm' windows10.yml
+          grep -Fq '/dev/net/tun:/dev/net/tun' windows10.yml
+          grep -Fq './windows:/storage' windows10.yml
+          ! grep -Eq 'check_github_follow\.sh|60 hours/month|100% Free|completely free' README.md
+          echo PC_FREE_SETUP_GUARDRAILS_PASS
+
+      - name: Validate Docker Compose configuration
+        env:
+          WINDOWS_USERNAME: compose-ci
+          WINDOWS_PASSWORD: compose-check-only
+        run: docker compose -f windows10.yml config --quiet
