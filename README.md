@@ -82,47 +82,23 @@ For local Docker installation, see the complete guide below.
 
 ## Guía Rápida
 
-### 1️⃣ Verifica el almacenamiento disponible
-
-```bash
-df -h
-```
-
-Escoge la partición con más espacio libre.
-
-### 2️⃣ Crea la carpeta de datos para Docker
-
-```bash
-sudo mkdir -p /tmp/docker-data
-```
-
-### 3️⃣ Configura Docker
-
-Edita el archivo:
-
-```bash
-sudo nano /etc/docker/daemon.json
-```
-
-Agrega:
-
-```json
-{
-  "data-root": "/tmp/docker-data"
-}
-```
-
-### 4️⃣ Reinicia tu Codespace
-
-Para aplicar los cambios de configuración.
-
-### 5️⃣ Verifica Docker
+Run these commands in a Linux host or GitHub Codespace where Docker and hardware virtualization are available:
 
 ```bash
 docker info
+docker compose version
 ```
 
-Asegúrate de que `Docker Root Dir` sea `/tmp/docker-data`.
+Do not change Docker's global `data-root` to `/tmp` for this setup. The Windows disk is persisted under the repository's ignored `./windows/` directory via the Compose bind mount.
+
+Create a local `.env` file with your own credentials before starting the container:
+
+```ini
+WINDOWS_USERNAME=YourUsername
+WINDOWS_PASSWORD=Use-A-Long-Unique-Password
+```
+
+Keep `.env` private; it is ignored by Git. Ensure the host makes `/dev/kvm` available before expecting the Windows VM to boot.
 
 ---
 
@@ -250,10 +226,10 @@ Press Ctrl+C to exit log view.
 Remove container and all data volumes:
 
 ```bash
-docker compose -f windows10.yml down -v
+docker compose -f windows10.yml down
 ```
 
-**⚠️ Warning**: This deletes all Windows data permanently.
+This stops and removes the container but keeps files in `./windows/`. To erase the virtual disk permanently, stop the container first and manually delete `./windows/`.
 
 ---
 
