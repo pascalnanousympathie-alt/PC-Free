@@ -1,0 +1,23 @@
+services:
+  windows:
+    image: dockurr/windows
+    container_name: windows
+    environment:
+      VERSION: "10"
+      USERNAME: ${WINDOWS_USERNAME:?Set WINDOWS_USERNAME in .env}
+      PASSWORD: ${WINDOWS_PASSWORD:?Set a strong WINDOWS_PASSWORD in .env}
+      RAM_SIZE: "4G"
+      CPU_CORES: "2"
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/kvm:/dev/kvm
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - "8006:8006"
+      - "3389:3389/tcp"
+      - "3389:3389/udp"
+    volumes:
+      - ./windows:/storage
+    stop_grace_period: 2m
+    restart: unless-stopped

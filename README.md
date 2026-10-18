@@ -1,6 +1,6 @@
-# PC-Free - Windows 10 in GitHub Codespaces | Run Windows 10 Free in Browser
+# PC-Free — Windows 10 in a Browser (Host Requirements Apply)
 
-Run a complete Windows 10 environment in your browser using Docker and GitHub Codespaces. Free, fast, and no installation required.
+Run a Windows 10 virtual machine in your browser through a Docker host that supports hardware virtualization. GitHub Codespaces is only an option when the chosen host exposes `/dev/kvm`; included usage is quota-limited and any paid overage depends on your account settings.
 
 [![GitHub stars](https://img.shields.io/github/stars/jephersonRD/pc-free?style=social)](https://github.com/jephersonRD/pc-free/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/jephersonRD/pc-free?style=social)](https://github.com/jephersonRD/pc-free/network/members)
@@ -16,13 +16,13 @@ Run a complete Windows 10 environment in your browser using Docker and GitHub Co
 
 ## What is PC-Free?
 
-PC-Free is an open-source project that lets you run Windows 10 directly in your web browser using GitHub Codespaces and Docker. No local installation, no powerful hardware required, completely free.
+PC-Free is an open-source setup for accessing a Windows virtual machine through a browser. It avoids installing Windows on your phone, but it still requires a compatible remote Linux/Docker host with KVM, enough RAM/storage, and a valid Windows license. GitHub Codespaces usage is limited by plan quota; additional usage may be blocked or billed.
 
 ### Key Benefits
 
-- ✅ **100% Free** - No hidden costs or subscriptions
+- ✅ **No local Windows installation required** — host availability, Codespaces quota, and possible overage costs still apply
 - ✅ **Browser-Based** - Access Windows from any device
-- ✅ **5-Minute Setup** - Deploy Windows 10 in minutes
+- ⚙️ **Setup time varies** with host availability, virtualization support, and the Windows image download
 - ✅ **No PC Required** - Run Windows without owning a Windows PC
 - ✅ **Docker Container** - Isolated, secure, and portable
 - ✅ **Persistent Data** - Your files and apps survive restarts
@@ -65,9 +65,9 @@ Compare PC-Free with other Windows cloud solutions:
 
 ## Quick Start: Run Windows 10 in 5 Minutes
 
-### Method 1: One-Click GitHub Codespaces (Recommended)
+### Method 1: GitHub Codespaces (Conditional — verify KVM first)
 
-The fastest way to get Windows 10 running in your browser:
+This works only if the Codespace host actually exposes `/dev/kvm` and has enough memory and free storage. Check it in the Codespace before installing anything:
 
 1. **Fork this repository** - Click "Fork" button at top right
 2. **Open Codespace** - Click "Code" → "Codespaces" → "Create codespace on main"
@@ -82,56 +82,32 @@ For local Docker installation, see the complete guide below.
 
 ## Guía Rápida
 
-### 1️⃣ Verifica el almacenamiento disponible
-
-```bash
-df -h
-```
-
-Escoge la partición con más espacio libre.
-
-### 2️⃣ Crea la carpeta de datos para Docker
-
-```bash
-sudo mkdir -p /tmp/docker-data
-```
-
-### 3️⃣ Configura Docker
-
-Edita el archivo:
-
-```bash
-sudo nano /etc/docker/daemon.json
-```
-
-Agrega:
-
-```json
-{
-  "data-root": "/tmp/docker-data"
-}
-```
-
-### 4️⃣ Reinicia tu Codespace
-
-Para aplicar los cambios de configuración.
-
-### 5️⃣ Verifica Docker
+Run these commands in a Linux host or GitHub Codespace where Docker and hardware virtualization are available:
 
 ```bash
 docker info
+docker compose version
 ```
 
-Asegúrate de que `Docker Root Dir` sea `/tmp/docker-data`.
+Do not change Docker's global `data-root` to `/tmp` for this setup. The Windows disk is persisted under the repository's ignored `./windows/` directory via the Compose bind mount.
+
+Create a local `.env` file with your own credentials before starting the container:
+
+```ini
+WINDOWS_USERNAME=YourUsername
+WINDOWS_PASSWORD=Use-A-Long-Unique-Password
+```
+
+Keep `.env` private; it is ignored by Git. Ensure the host makes `/dev/kvm` available before expecting the Windows VM to boot.
 
 ---
 
 ## 🧱 Archivo `windows10.yml`
 
+The runnable Compose file is now included at the repository root. It persists the Windows container using `./windows:/storage`, which is the storage path expected by the upstream `dockurr/windows` image. Virtualization devices such as `/dev/kvm` must actually be available on the host/Codespace; this configuration has not been runtime-tested on every Codespaces host.
+
 ```yaml
-# Antes de ejecutar docker-compose up, ejecuta:
-# bash check_github_follow.sh || exit 1
-# Si no sigues a https://github.com/jephersonRD, el entorno no se iniciará.
+# No helper script or GitHub follow check is required.
 services:
   windows:
     image: dockurr/windows
@@ -140,24 +116,21 @@ services:
       VERSION: "10"
       USERNAME: ${WINDOWS_USERNAME}
       PASSWORD: ${WINDOWS_PASSWORD}
-      RAM_SIZE: "10G"
-      CPU_CORES: "4"
+      RAM_SIZE: "4G"
+      CPU_CORES: "2"
     cap_add:
       - NET_ADMIN
     ports:
       - "8006:8006"
       - "3389:3389/tcp"
     volumes:
-      - /tmp/docker-data:/mnt/disco1
-      - windows-data:/mnt/windows-data
+      - ./windows:/storage
     devices:
       - "/dev/kvm:/dev/kvm"
       - "/dev/net/tun:/dev/net/tun"
     stop_grace_period: 2m
     restart: always
 
-volumes:
-  windows-data:
 ```
 
 ---
@@ -167,7 +140,6 @@ volumes:
 ```ini
 WINDOWS_USERNAME=YourUsername
 WINDOWS_PASSWORD=YourPassword
-GITHUB_USER=YourGitHubUsername
 ```
 
 ### 🛑 Agrega este archivo a tu `.gitignore`:
@@ -183,7 +155,7 @@ echo ".env" >> .gitignore
 ### Iniciar por primera vez
 
 ```bash
-docker-compose -f windows10.yml up
+docker compose -f windows10.yml up
 ```
 
 ### 🔌 Apagar la PC
@@ -198,9 +170,9 @@ docker stop windows
 
 ### For GitHub Codespaces (Recommended)
 
-- GitHub account (free tier supported)
+- GitHub account; included Codespaces usage and eligibility depend on plan and current quota
 - Modern web browser (Chrome 90+, Firefox 88+, Edge 90+, Safari 14+)
-- 10GB+ available Codespace storage
+- A Codespace or host with `/dev/kvm` and enough free RAM/disk; this is not guaranteed by every hosted environment
 - Stable internet connection (2 Mbps+ recommended)
 
 ### For Local Docker Installation
@@ -220,7 +192,7 @@ docker stop windows
 Start the Windows container:
 
 ```bash
-docker-compose -f windows10.yml up -d
+docker compose -f windows10.yml up -d
 ```
 
 ### Stop Windows Environment
@@ -254,10 +226,10 @@ Press Ctrl+C to exit log view.
 Remove container and all data volumes:
 
 ```bash
-docker-compose -f windows10.yml down -v
+docker compose -f windows10.yml down
 ```
 
-**⚠️ Warning**: This deletes all Windows data permanently.
+This stops and removes the container but keeps files in `./windows/`. To erase the virtual disk permanently, stop the container first and manually delete `./windows/`.
 
 ---
 
@@ -270,8 +242,8 @@ Edit `windows10.yml` to adjust resources:
 ```yaml
 environment:
   VERSION: "10"              # Windows version (10 or 11)
-  RAM_SIZE: "10G"           # RAM allocation
-  CPU_CORES: "4"            # CPU core count
+  RAM_SIZE: "8G"            # Increase only when host memory allows
+  CPU_CORES: "4"             # Increase only when host CPU allows
   DISK_SIZE: "64G"          # Virtual disk size
   USERNAME: ${WINDOWS_USERNAME}
   PASSWORD: ${WINDOWS_PASSWORD}
@@ -304,8 +276,8 @@ For slower systems, reduce resource allocation:
 
 ```yaml
 environment:
-  RAM_SIZE: "6G"     # Minimum for Windows 10
-  CPU_CORES: "2"     # Minimum cores
+  RAM_SIZE: "4G"     # Upstream baseline; host must have additional memory for Docker/OS
+  CPU_CORES: "2"     # Upstream baseline
 ```
 
 ---
@@ -334,9 +306,9 @@ environment:
 
 Yes! You have full administrator access. Installed software persists in Docker volumes between restarts.
 
-### Does this work on GitHub free tier?
+### Does this work on GitHub Free?
 
-Yes! GitHub free tier includes 60 hours/month of Codespaces, which is sufficient for regular testing and development work.
+Sometimes, but it is not guaranteed. The Codespace host must expose `/dev/kvm`; machine memory and storage must also be sufficient. GitHub Free personal accounts have monthly included Codespaces compute/storage quotas, not unlimited use. Check the current allowance and any spending limits in the [official GitHub Codespaces billing guide](https://docs.github.com/en/billing/concepts/product-billing/github-codespaces).
 
 ### Can I use this for gaming?
 
@@ -378,8 +350,8 @@ ls -la /dev/kvm
 
 ### Slow Performance Issues
 
-1. Reduce RAM allocation to 6G
-2. Reduce CPU cores to 2
+1. Keep `RAM_SIZE` at `4G` and `CPU_CORES` at `2` on smaller hosts
+2. Increase resources only when the host has enough RAM/CPU remaining for Docker and the operating system
 3. Close other resource-intensive Codespace apps
 4. Check Codespace resource usage
 
